@@ -30,9 +30,8 @@ wire c_pise = pe_ev;
 //always @(*) begin
 //end
 
+// front detector
 always @(posedge i_clk, negedge i_nrst) begin
-
-	// front detector
 	if (!i_nrst)
 		fr_det <= 2'b0;
 	else begin
@@ -40,8 +39,8 @@ always @(posedge i_clk, negedge i_nrst) begin
 	end
 end
 
+// busy bit
 always @(posedge i_clk, negedge i_nrst) begin
-	// busy bit
 	if (!i_nrst)
 		o_mty <= 1'b1;
 	else begin
@@ -53,32 +52,32 @@ always @(posedge i_clk, negedge i_nrst) begin
 	end
 end
 
+// PISO register
 always @(posedge i_clk, negedge i_nrst) begin
-	// PISO register
 	if (!i_nrst)
 		piso <= {WIDTH_DATA{1'b1}};
 	else begin
 		if (c_start) // load piso
 			piso <= i_data;
 		else if (c_pise)
-			piso <= {piso[WIDTH_DATA-2:0], 1'b1};
+			piso <= {1'b1, piso[WIDTH_DATA-1:1]};
 	end
 end
 	
+// output buffer
 always @(posedge i_clk, negedge i_nrst) begin
-	// output buffer
 	if (!i_nrst) // async set
-		o_buf <= 1'b0;
+		o_buf <= 1'b1;
 	else begin
 		if (c_start) // sync reset
 			o_buf <= 1'b0;
 		else if (c_pise)
-			o_buf <= piso[WIDTH_DATA-1];
+			o_buf <= piso[0];
 	end
 end
 
+// state counter
 always @(posedge i_clk, negedge i_nrst) begin
-	// state counter
 	if (!i_nrst)
 		state <= 4'b0;
 	else begin

@@ -21,16 +21,18 @@ module uart #(
 
 wire clk_gen;
 
-/*
-rx m_rx (
+rx #(
+	.WIDTH_DATA (WIDTH_DATA),
+	.NB_STOP    (NB_STOP)
+) m_rx (
 	.i_buf  (i_rx),
 	.o_rdy  (o_rdy),
 	.o_data (o_data),
 	.i_re   (i_re),
 	.i_nrst (i_nrst),
-	.i_clk  (i_clk)
+	.i_clk  (i_clk),
+	.clk_rx (clk_gen)
 );
-*/
 
 tx #(
 	.WIDTH_DATA (WIDTH_DATA),
