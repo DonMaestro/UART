@@ -1,5 +1,6 @@
 `timescale 1 ns / 1 ns
 
+`include "src/rx.v"
 `include "src/tx.v"
 `include "src/clock_gen.v"
 `include "src/uart.v"
@@ -13,17 +14,18 @@ reg             we;
 reg [WIDTH-1:0] data;
 
 wire o_tx;
+wire ready;
 wire o_mty;
 
 uart m_uart (
 	// external pins
-	.i_rx   (1'b1),
+	.i_rx   (o_tx),
 	.o_tx   (o_tx),
 	// inside in the chip
 	.o_data (),
-	.o_rdy  (),
+	.o_rdy  (ready),
 	.o_mty  (o_mty),
-	.i_re   (),
+	.i_re   (ready),
 	.i_we   (we),
 	.i_data (data),
 	.i_nrst (nrst),
