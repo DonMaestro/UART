@@ -4,9 +4,9 @@ SOURCES?=test/${TARGET}.v
 TEST_DIR=Test
 OUTPUT_DIR=Debug
 
-.PHONY: wave
+.PHONY: wave uvm
 
-all: uvm
+#all: uvm
 
 iv_build:
 	mkdir -p ./Debug
@@ -19,7 +19,7 @@ ms_build:
 	vlog ${TEST_DIR}/tb_${TARGET}.sv
 	#iverilog -o ${TARGET}.out ${TEST_DIR}/tb_${TARGET}.v
 
-ms_sim: test_build
+ms_sim: ms_build
 	mkdir -p ./Debug
 	vsim -c tb_${TARGET}
 	#vvp ${TARGET}.out
