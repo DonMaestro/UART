@@ -55,7 +55,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 		if (i_re)
 			o_rdy <= 1'b0;
 
-		if (WIDTH_DATA + 2 == state)
+		if (WIDTH_DATA + 1 == state && pe_ev)
 			o_rdy <= 1'b1;
 	end
 end
@@ -79,7 +79,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
 		state <= 4'b0;
 	else begin
-		if (NB_STATE == state && pe_ev)
+		if (NB_STATE - 1 == state && pe_ev)
 			state <= 4'b0;
 		else if ((start_ev && !state) || (state && pe_ev))
 			state <= state + 4'b1;

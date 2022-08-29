@@ -18,12 +18,14 @@ localparam NB_STATE = 1 + WIDTH_DATA + NB_STOP;
 reg [1:0] fr_det;
 wire pe_ev = fr_det[1] && ~fr_det[0];
 
+reg load;
+
 reg [WIDTH_DATA-1:0] piso;
 
 reg [3:0] state;
 
 wire c_start = 4'b0 == state && ~o_mty && pe_ev;
-wire c_pise = pe_ev;
+wire c_pise = pe_ev && 4'b0 != state;
 
 //tx_ctrl m_tx_ctrl();
 //control
@@ -40,15 +42,16 @@ always @(posedge i_clk, negedge i_nrst) begin
 end
 
 // busy bit
+always @(*) o_mty = 4'b0 == state && !load;
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
-		o_mty <= 1'b1;
+		load <= 1'b0;
 	else begin
 		if (i_we)
-			o_mty <= 1'b0;
+			load <= 1'b1;
 
 		if (c_start)
-			o_mty <= 1'b1;
+			load <= 1'b0;
 	end
 end
 
@@ -57,7 +60,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
 		piso <= {WIDTH_DATA{1'b1}};
 	else begin
-		if (c_start) // load piso
+		if (i_we) // load piso
 			piso <= i_data;
 		else if (c_pise)
 			piso <= {1'b1, piso[WIDTH_DATA-1:1]};
@@ -81,7 +84,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
 		state <= 4'b0;
 	else begin
-		if (NB_STATE == state && pe_ev)
+		if (NB_STATE - 1 == state && pe_ev)
 			state <= 4'b0;
 		else if ((c_start || state) && pe_ev)
 			state <= state + 4'b1;
