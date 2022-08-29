@@ -7,6 +7,8 @@ class uart_monitor extends uvm_monitor;
 	virtual uart_intf #(.WIDTH(WIDTH)) vif;
 	uart_seq_item tx;
 
+	int clk;
+
 	function new(string name, uvm_component parent);
 		super.new(name, parent);
 		tx = new();
@@ -24,20 +26,27 @@ class uart_monitor extends uvm_monitor;
 	virtual task run_phase(uvm_phase phase);
 		super.run_phase(phase);
 		//`uvm_warning(get_type_name(), "RUN PHASE")
-		forever
-		begin
-			@(posedge vif.clk);
-			tx = uart_seq_item::type_id::create("tx", this);
-			tx.rx       = vif.rx;
-			tx.tx       = vif.tx;
-			tx.wdata    = vif.wdata;
-			tx.we       = vif.we;
-			tx.rdata    = vif.rdata;
-			tx.rdy_rx   = vif.rdy_rx;
-			tx.mty_tx   = vif.mty_tx;
-			tx.re       = vif.re;
-			aport.write(tx);
-		end
+		tx = uart_seq_item::type_id::create("tx", this);
+		fork
+			forever @(negedge vif.rx) begin
+				`uvm_info("RX", "negedge", UVM_MEDIUM)
+				clk = 0;
+			end
+			forever @(posedge vif.clk) begin
+				tx.wdata    = vif.wdata;
+				tx.we       = vif.we;
+				tx.rdata    = vif.rdata;
+				tx.rdy_rx   = vif.rdy_rx;
+				tx.mty_tx   = vif.mty_tx;
+				tx.re       = vif.re;
+
+				tx.rx = vif.rx;
+				tx.tx = vif.tx;
+				//if (!tx.rdy_rx && vif.rdy_rx)
+
+				aport.write(tx);
+			end
+		join_none
 	endtask
 endclass
 

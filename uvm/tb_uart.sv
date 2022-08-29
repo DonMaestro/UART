@@ -1,4 +1,8 @@
 `timescale 1 ns / 1 ns
+
+`include "src/rx.v"
+`include "src/tx.v"
+`include "src/clock_gen.v"
 `include "src/uart.v"
 
 `include "uvm_macros.svh"
@@ -15,19 +19,20 @@ uart_intf #(.WIDTH(WIDTH)) intf(nrst, clk);
 
 // DUT
 uart DUT(//external pins
-         .o_TX        (intf.tx),
-         .o_RX        (intf.rx),
-         // inside in the chip
-         .o_ready_RX  (intf.rdy_rx),
-         .o_empty_TX  (intf.mty_tx),
-         .o_data      (intf.rdata),
-         .i_data      (intf.wdata),
-         .i_re        (intf.re),
-         .i_we        (intf.we),
-         .i_nrst      (intf.nrst),
-         .i_clk       (intf.clk));
-defparam DUT.WIDTH = WIDTH;
-defparam DUT.SIZE = 8;
+	.i_rx        (intf.rx),
+	.o_tx        (intf.tx),
+	// inside in the chip
+	.o_rdy       (intf.rdy_rx),
+	.o_mty       (intf.mty_tx),
+	.o_data      (intf.rdata),
+	.i_data      (intf.wdata),
+	.i_re        (intf.re),
+	.i_we        (intf.we),
+	.i_nrst      (intf.nrst),
+	.i_clk       (intf.clk)
+);
+defparam DUT.WIDTH_DATA = WIDTH;
+defparam DUT.NB_STOP = 2;
 
 initial
 begin

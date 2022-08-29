@@ -20,7 +20,7 @@ class uart_agent extends uvm_agent;
 		if(get_is_active() == UVM_ACTIVE) begin
 			driver = uart_driver::type_id::create("driver", this);
 			sequencer = uvm_sequencer#(uart_seq_item)
-			::type_id::create("sequencer", this);
+				::type_id::create("sequencer", this);
 		end
 	endfunction
 

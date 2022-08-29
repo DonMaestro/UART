@@ -22,13 +22,19 @@ class uart_driver extends uvm_driver #(uart_seq_item);
 //		vif.rst = 1'b1;
 		forever begin
 			seq_item_port.get_next_item(req);
+
+			vif.rx = vif.tx;
+
 			vif.wdata = req.wdata;
+
 			vif.we = req.we;
-			if (vif.mty_tx)
+			if (!vif.mty_tx)
 				vif.we = 1'b0;
+
 			vif.re = req.re;
-			if (vif.rdy_rx)
+			if (!vif.rdy_rx)
 				vif.re = 1'b0;
+
 			seq_item_port.item_done();
 			@(posedge vif.clk);
 		end
