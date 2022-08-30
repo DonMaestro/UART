@@ -31,7 +31,7 @@ class uart_sequence extends uvm_sequence#(uart_seq_item);
 
 	`uvm_object_utils(uart_sequence)
 
-	int unsigned n_times = 10000;
+	int unsigned n_times = 3000;
 
 	function new(string name = "uart_sequence");
 		super.new(name);

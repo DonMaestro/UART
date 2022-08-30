@@ -13,6 +13,8 @@ class uart_monitor extends uvm_monitor;
 		super.new(name, parent);
 		tx = new();
 		aport = new("aport", this);
+
+		clk = 0;
 	endfunction
 
 	virtual function void build_phase(uvm_phase phase);
@@ -28,8 +30,7 @@ class uart_monitor extends uvm_monitor;
 		//`uvm_warning(get_type_name(), "RUN PHASE")
 		tx = uart_seq_item::type_id::create("tx", this);
 		fork
-			forever @(negedge vif.rx) begin
-				`uvm_info("RX", "negedge", UVM_MEDIUM)
+			forever @(negedge vif.tx) begin
 				clk = 0;
 			end
 			forever @(posedge vif.clk) begin
@@ -43,7 +44,6 @@ class uart_monitor extends uvm_monitor;
 				tx.rx = vif.rx;
 				tx.tx = vif.tx;
 				//if (!tx.rdy_rx && vif.rdy_rx)
-
 				aport.write(tx);
 			end
 		join_none

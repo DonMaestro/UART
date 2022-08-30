@@ -32,7 +32,7 @@ uart DUT(//external pins
 	.i_clk       (intf.clk)
 );
 defparam DUT.WIDTH_DATA = WIDTH;
-defparam DUT.NB_STOP = 2;
+defparam DUT.NB_STOP = NB_STOP;
 
 initial
 begin
@@ -50,7 +50,7 @@ end
 
 initial
 begin
-	$dumpfile("Debug/uart.vcd");
+	$dumpfile("Debug/tb_uart.vcd");
 	$dumpvars;
 end
 

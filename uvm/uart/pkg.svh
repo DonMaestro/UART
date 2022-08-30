@@ -5,6 +5,7 @@ package uart_pkg;
 import uvm_pkg::*;
 
 parameter WIDTH = 8;
+parameter NB_STOP = 2;
 
 `include "uvm/uart/sequence.svh"
 `include "uvm/uart/driver.svh"

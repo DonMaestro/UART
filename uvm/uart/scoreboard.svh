@@ -4,16 +4,26 @@ class uart_scoreboard extends uvm_scoreboard;
 	`uvm_component_utils(uart_scoreboard)
 	uvm_analysis_imp #(uart_seq_item, uart_scoreboard) item_analysis_imp;
 
+	localparam STATE_STOP_LAST = WIDTH + NB_STOP - 1;
+	localparam STATE_START = WIDTH + NB_STOP;
+
 	logic start;
 	logic [WIDTH-1:0] data[$];
 	logic [WIDTH-1:0] data_origin;
 	logic [WIDTH-1:0] data_actual; // expected
+	logic tx_actual; // expected
 
 	int clk;
 	logic tx_old;
+	int nd, ns;
+	int state;
 
 	function new(string name, uvm_component parent);
 		super.new(name, parent);
+		clk = 6;
+		state = STATE_STOP_LAST;
+		tx_actual = 1;
+		data_origin = {(WIDTH-1){1'b1}};
 	endfunction
 
 	virtual function void build_phase(uvm_phase phase);
@@ -22,30 +32,54 @@ class uart_scoreboard extends uvm_scoreboard;
 	endfunction
 
 	virtual function write(uart_seq_item pkt);
-		if (15 == clk++) begin
-			data_actual = {pkt.tx, data_actual};
+		if (tx_old && !pkt.tx) begin
+			clk = 0;
+			if (STATE_STOP_LAST == state)
+				state++;
 		end
-
-		if (!tx_old && pkt.tx)
-			clk = 1;
 		tx_old = pkt.tx;
 
-		if (pkt.we)
-			data_origin = pkt.wdata;
-
-		if (pkt.mty_tx) begin
-			if (data_actual != data_origin)
-				`uvm_error("TX", "does not correspond to the value")
+		if (15 == clk++) begin
+			if (WIDTH > state)
+				tx_actual = data_origin[state];
+			else if (WIDTH + NB_STOP > state)
+				tx_actual = 1'b1;
 			else
-				`uvm_info("TX", "the data is correct", UVM_MEDIUM)
+				tx_actual = 1'b0;
+
+			if (pkt.tx != tx_actual) begin
+				`uvm_error("TX", $sformatf("does not correspond to the value",
+				"expected %b actual %b", tx_actual, pkt.tx))
+			end
+			else begin
+				if (WIDTH > state)
+					`uvm_info("TX", "data bit is correct", UVM_MEDIUM)
+				else if (WIDTH + NB_STOP > state)
+					`uvm_info("TX", "STOP bit is correct", UVM_MEDIUM)
+				else
+					`uvm_info("TX", "START bit is correct", UVM_MEDIUM)
+			end
+
+			if (STATE_STOP_LAST != state)
+				state++;
+			if (STATE_START + 1 == state)
+				state = 0;
+			clk = 0;
 		end
 
+		if (pkt.we) begin
+			data_origin = pkt.wdata;
+			`uvm_info("TX", $sformatf("write data %b", data_origin), UVM_MEDIUM)
+		end
+
+		/*
 		if (pkt.rdy_rx) begin
 			if (pkt.rdata != data_origin)
 				`uvm_error("RX", "does not correspond to the value")
 			else
 				`uvm_info("RX", "the data is correct", UVM_MEDIUM)
 		end
+		*/
 
 //			data.push_back(pkt.wdata);
 //		if (pkt.overflow) begin
