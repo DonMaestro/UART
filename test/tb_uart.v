@@ -16,13 +16,14 @@ reg [WIDTH-1:0] data;
 wire o_tx;
 wire ready;
 wire o_mty;
+wire [WIDTH-1:0] o_data;
 
 uart m_uart (
 	// external pins
 	.i_rx   (o_tx),
 	.o_tx   (o_tx),
 	// inside in the chip
-	.o_data (),
+	.o_data (o_data),
 	.o_rdy  (ready),
 	.o_mty  (o_mty),
 	.i_re   (ready),
