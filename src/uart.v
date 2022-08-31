@@ -1,7 +1,9 @@
 
 module uart #(
 	parameter WIDTH_DATA = 8,
-	parameter NB_STOP = 1
+	parameter NB_STOP = 2,
+	parameter CLK_SIZE = 434,
+	parameter WIDTH_CLK = 9
 ) (
 	// external pins
 	input                   i_rx,
@@ -47,7 +49,10 @@ tx #(
 	.i_clk  (i_clk)
 );
 
-clock_gen clock (
+clock_gen #(
+	.WIDTH(WIDTH_CLK),
+	.SIZE(CLK_SIZE)
+) clock (
 	.o_clk (clk_gen),
 	.i_nrst(i_nrst),
 	.i_clk (i_clk)

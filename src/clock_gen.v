@@ -1,15 +1,12 @@
 
 module clock_gen #(
-	parameter ICLK = 50000,
-	parameter BAUN = 9600
+	parameter WIDTH = 9,
+	parameter SIZE = 434
 ) (
 	output o_clk,
 	input  i_nrst,
 	input  i_clk
 );
-
-localparam WIDTH = 4;
-localparam SIZE = 2 ** WIDTH;
 
 reg [WIDTH-1:0] cnt;
 
