@@ -18,7 +18,12 @@ logic nrst, clk;
 uart_intf #(.WIDTH(WIDTH)) intf(nrst, clk);
 
 // DUT
-uart DUT(//external pins
+uart #(
+	.WIDTH_DATA (WIDTH),
+	.NB_STOP    (NB_STOP),
+	.WIDTH_CLK  (WIDTH_CLK),
+	.CLK_SIZE   (CLK_SIZE)
+) DUT(//external pins
 	.i_rx        (intf.rx),
 	.o_tx        (intf.tx),
 	// inside in the chip
@@ -31,8 +36,6 @@ uart DUT(//external pins
 	.i_nrst      (intf.nrst),
 	.i_clk       (intf.clk)
 );
-defparam DUT.WIDTH_DATA = WIDTH;
-defparam DUT.NB_STOP = NB_STOP;
 
 initial
 begin

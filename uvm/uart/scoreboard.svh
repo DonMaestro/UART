@@ -20,7 +20,7 @@ class uart_scoreboard extends uvm_scoreboard;
 
 	function new(string name, uvm_component parent);
 		super.new(name, parent);
-		clk = 6;
+		clk = CLK_SIZE / 2 - 2;
 		state = STATE_STOP_LAST;
 		tx_actual = 1;
 		data_origin = {(WIDTH-1){1'b1}};
@@ -39,7 +39,7 @@ class uart_scoreboard extends uvm_scoreboard;
 		end
 		tx_old = pkt.tx;
 
-		if (15 == clk++) begin
+		if (CLK_SIZE - 1 == clk++) begin
 			if (WIDTH > state)
 				tx_actual = data_origin[state];
 			else if (WIDTH + NB_STOP > state)
