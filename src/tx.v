@@ -13,10 +13,16 @@ module tx #(
 	input                   i_clk, clk_tx
 );
 
-localparam NB_STATE = 1 + WIDTH_DATA + NB_STOP;
+localparam STATE_DATA_FIRST = 0;
+localparam STATE_DATA_LAST  = WIDTH_DATA - 1;
+localparam STATE_STOP_FIRST = WIDTH_DATA;
+localparam STATE_STOP_LAST  = WIDTH_DATA + NB_STOP - 1;
+localparam STATE_IDLE       = STATE_STOP_LAST + 1;
+localparam STATE_START      = STATE_IDLE + 1;
 
-reg [1:0] fr_det;
-wire pe_ev = fr_det[1] && ~fr_det[0];
+reg [1:0] detr_clk_front;
+wire ev_pe = detr_clk_front[1] && ~detr_clk_front[0];
+reg ev_start;
 
 reg load;
 
@@ -24,8 +30,20 @@ reg [WIDTH_DATA-1:0] piso;
 
 reg [3:0] state;
 
-wire c_start = 4'b0 == state && ~o_mty && pe_ev;
-wire c_pise = pe_ev && 4'b0 != state;
+wire en_piso = ev_pe && (STATE_DATA_FIRST <= state && STATE_DATA_LAST >= state || STATE_START == state);
+
+always @(*) begin
+	if (STATE_STOP_LAST == state || STATE_IDLE == state)
+		ev_start = ev_pe && load;
+	else
+		ev_start = 1'b0;
+
+	if (STATE_STOP_FIRST <= state && STATE_IDLE >= state)
+		o_mty = !load;
+	else
+		o_mty = 1'b0;
+
+end
 
 //tx_ctrl m_tx_ctrl();
 //control
@@ -35,14 +53,13 @@ wire c_pise = pe_ev && 4'b0 != state;
 // front detector
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
-		fr_det <= 2'b0;
+		detr_clk_front <= 2'b0;
 	else begin
-		fr_det <= {clk_tx, fr_det[1]};
+		detr_clk_front <= {clk_tx, detr_clk_front[1]};
 	end
 end
 
 // busy bit
-always @(*) o_mty = 4'b0 == state && !load;
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
 		load <= 1'b0;
@@ -50,7 +67,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 		if (i_we)
 			load <= 1'b1;
 
-		if (c_start)
+		if (ev_start)
 			load <= 1'b0;
 	end
 end
@@ -62,32 +79,36 @@ always @(posedge i_clk, negedge i_nrst) begin
 	else begin
 		if (i_we) // load piso
 			piso <= i_data;
-		else if (c_pise)
+		else if (en_piso)
 			piso <= {1'b1, piso[WIDTH_DATA-1:1]};
 	end
 end
 	
 // output buffer
 always @(posedge i_clk, negedge i_nrst) begin
-	if (!i_nrst) // async set
+	if (!i_nrst) // async reset
 		o_buf <= 1'b1;
 	else begin
-		if (c_start) // sync reset
+		if (ev_start) // sync reset
 			o_buf <= 1'b0;
-		else if (c_pise)
+		else if (en_piso)
 			o_buf <= piso[0];
+		else if (STATE_STOP_FIRST <= state && STATE_IDLE >= state)
+			o_buf <= 1'b1;
 	end
 end
 
 // state counter
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
-		state <= 4'b0;
+		state <= STATE_STOP_FIRST;
 	else begin
-		if (NB_STATE - 1 == state && pe_ev)
-			state <= 4'b0;
-		else if ((c_start || state) && pe_ev)
-			state <= state + 4'b1;
+		case (state)
+		STATE_STOP_LAST: state <= ev_start ? STATE_START : state;
+		STATE_IDLE: state <= ev_start ? STATE_START : state;
+		STATE_START: state <= ev_pe ? STATE_DATA_FIRST : state;
+		default: state <= ev_pe ? state + 1 : state;
+		endcase
 	end
 end
 
