@@ -21,7 +21,8 @@ module uart #(
 
 //localparam NB_STATE = 1 + WIDTH_DATA + NB_STOP;
 
-wire clk_gen;
+wire clk_rx, clk_tx;
+wire srst_clk_rx;
 
 rx #(
 	.WIDTH_DATA (WIDTH_DATA),
@@ -30,10 +31,11 @@ rx #(
 	.i_buf  (i_rx),
 	.o_rdy  (o_rdy),
 	.o_data (o_data),
+	.o_srst_clk(srst_clk_rx),
 	.i_re   (i_re),
 	.i_nrst (i_nrst),
-	.i_clk  (i_clk),
-	.clk_rx (clk_gen)
+	.clk_rx (clk_rx),
+	.i_clk  (i_clk)
 );
 
 tx #(
@@ -45,15 +47,26 @@ tx #(
 	.i_we   (i_we),
 	.i_data (i_data),
 	.i_nrst (i_nrst),
-	.clk_tx (clk_gen),
+	.clk_tx (clk_tx),
 	.i_clk  (i_clk)
+);
+
+
+clock_gen #(
+	.WIDTH(WIDTH_CLK),
+	.SIZE(CLK_SIZE)
+) rx_clock (
+	.o_clk (clk_rx),
+	.i_srst(srst_clk_rx),
+	.i_nrst(i_nrst),
+	.i_clk (i_clk)
 );
 
 clock_gen #(
 	.WIDTH(WIDTH_CLK),
 	.SIZE(CLK_SIZE)
-) clock (
-	.o_clk (clk_gen),
+) tx_clock (
+	.o_clk (clk_tx),
 	.i_nrst(i_nrst),
 	.i_clk (i_clk)
 );
