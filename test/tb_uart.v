@@ -19,6 +19,8 @@ reg clk, nrst;
 reg             we;
 reg [WIDTH-1:0] data;
 
+reg rx;
+
 wire o_tx;
 wire ready;
 wire o_mty;
@@ -31,18 +33,21 @@ uart #(
 	.CLK_SIZE   (CLK_SIZE)
 ) m_uart (
 	// external pins
-	.i_rx   (o_tx),
+	.i_rx   (rx),
 	.o_tx   (o_tx),
 	// inside in the chip
 	.o_data (o_data),
 	.o_rdy  (ready),
 	.o_mty  (o_mty),
 	.i_re   (ready),
-	.i_we   (we),
+	.i_we   (o_mty),
 	.i_data (data),
 	.i_nrst (nrst),
 	.i_clk  (clk)
 );
+
+always @(o_tx) #2935 rx = o_tx;
+//always @(o_tx) rx = o_tx;
 
 always @(posedge clk, negedge nrst) begin
 	if (!nrst)
@@ -53,15 +58,9 @@ always @(posedge clk, negedge nrst) begin
 	end
 end
 
-always @(posedge clk) begin
-	if (o_mty)
-		we = 1'b1;
-	else
-		we = 1'b0;
-end
-
 initial begin
 	clk = 1'b1;
+	rx = 1'b1;
 
 	nrst = 1'b0;
 	nrst <= #1 1'b1;
