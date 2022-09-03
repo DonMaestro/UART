@@ -25,10 +25,9 @@ wire clk_rx, clk_tx;
 wire srst_clk_rx;
 
 rx #(
-	.WIDTH_DATA (WIDTH_DATA),
-	.NB_STOP    (NB_STOP)
+	.WIDTH_DATA (WIDTH_DATA)
 ) m_rx (
-	.i_buf  (i_rx),
+	.i_rx   (i_rx),
 	.o_rdy  (o_rdy),
 	.o_data (o_data),
 	.o_srst_clk(srst_clk_rx),
@@ -67,6 +66,7 @@ clock_gen #(
 	.SIZE(CLK_SIZE)
 ) tx_clock (
 	.o_clk (clk_tx),
+	.i_srst(1'b0),
 	.i_nrst(i_nrst),
 	.i_clk (i_clk)
 );
