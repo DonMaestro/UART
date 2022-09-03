@@ -9,6 +9,7 @@ module clock_gen #(
 	input  i_clk
 );
 
+localparam [WIDTH-1:0] ONE = 1;
 reg [WIDTH-1:0] cnt;
 
 assign o_clk = cnt == 0;
@@ -23,7 +24,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 			if (SIZE - 1 == cnt)
 				cnt <= {WIDTH{1'b0}};
 			else
-				cnt <= cnt + 1;
+				cnt <= cnt + ONE;
 		end
 	end
 end
