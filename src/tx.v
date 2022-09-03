@@ -13,12 +13,12 @@ module tx #(
 	input                   i_clk, clk_tx
 );
 
-localparam STATE_DATA_FIRST = 0;
-localparam STATE_DATA_LAST  = WIDTH_DATA - 1;
-localparam STATE_STOP_FIRST = WIDTH_DATA;
-localparam STATE_STOP_LAST  = WIDTH_DATA + NB_STOP - 1;
-localparam STATE_IDLE       = STATE_STOP_LAST + 1;
-localparam STATE_START      = STATE_IDLE + 1;
+localparam [3:0] STATE_DATA_FIRST = 0;
+localparam [3:0] STATE_DATA_LAST  = WIDTH_DATA - 1;
+localparam [3:0] STATE_STOP_FIRST = WIDTH_DATA;
+localparam [3:0] STATE_STOP_LAST  = WIDTH_DATA + NB_STOP - 1;
+localparam [3:0] STATE_IDLE       = STATE_STOP_LAST + 1;
+localparam [3:0] STATE_START      = STATE_IDLE + 1;
 
 reg [1:0] detr_clk_front;
 wire ev_pe = detr_clk_front[1] && ~detr_clk_front[0];
@@ -107,7 +107,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 		STATE_STOP_LAST: state <= ev_start ? STATE_START : state;
 		STATE_IDLE: state <= ev_start ? STATE_START : state;
 		STATE_START: state <= ev_pe ? STATE_DATA_FIRST : state;
-		default: state <= ev_pe ? state + 1 : state;
+		default: state <= ev_pe ? state + 4'b1 : state;
 		endcase
 	end
 end
