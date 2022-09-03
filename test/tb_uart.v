@@ -8,7 +8,7 @@
 module tb_uart;
 
 localparam WIDTH = 8;
-localparam NB_STOP = 2;
+localparam NB_STOP = 1;
 
 // 20 ns == 50 MHz
 localparam BAUDS = 115200;
@@ -16,14 +16,13 @@ localparam CLK_SIZE = 50_000_000 / BAUDS;
 localparam WIDTH_CLK = $clog2(CLK_SIZE);
 
 reg clk, nrst;
-reg             we;
 reg [WIDTH-1:0] data;
 
 reg rx;
 
 wire o_tx;
 wire ready;
-wire o_mty;
+wire empty;
 wire [WIDTH-1:0] o_data;
 
 uart #(
@@ -38,9 +37,9 @@ uart #(
 	// inside in the chip
 	.o_data (o_data),
 	.o_rdy  (ready),
-	.o_mty  (o_mty),
+	.o_mty  (empty),
 	.i_re   (ready),
-	.i_we   (o_mty),
+	.i_we   (empty),
 	.i_data (data),
 	.i_nrst (nrst),
 	.i_clk  (clk)
@@ -53,7 +52,7 @@ always @(posedge clk, negedge nrst) begin
 	if (!nrst)
 		data <= $random;
 	else begin
-		if (we && o_mty)
+		if (empty)
 			data <= $random;
 	end
 end
