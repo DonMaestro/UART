@@ -21,16 +21,16 @@ localparam [3:0] STATE_START      = STATE_IDLE + 1;
 
 wire i_buf;
 
-reg [1:0] detr_clk_front;
-reg [1:0] detr_start;
+reg detr_clk_front;
+reg detr_start;
 //reg ev_ne;
 
 reg [WIDTH_DATA-1:0] sipo;
 
 reg [3:0] state;
 
-wire ev_pe = detr_clk_front[0] && ~detr_clk_front[1];
-wire ev_ne = ~detr_start[0] && detr_start[1];
+wire ev_pe = clk_rx && ~detr_clk_front;
+wire ev_ne = ~i_buf && detr_start;
 wire en_sipo = ev_pe && STATE_DATA_FIRST <= state && STATE_DATA_LAST >= state;
 
 assign o_data = sipo;
@@ -56,18 +56,18 @@ assign o_srst_clk = STATE_IDLE == state && ev_ne;
 // front detector
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
-		detr_clk_front <= 2'b0;
+		detr_clk_front <= 1'b0;
 	else begin
-		detr_clk_front <= {detr_clk_front[0], clk_rx};
+		detr_clk_front <= clk_rx;
 	end
 end
 
 // start detector
 always @(posedge i_clk, negedge i_nrst) begin
 	if (!i_nrst)
-		detr_start <= 2'b11;
+		detr_start <= 1'b1;
 	else begin
-		detr_start <= {detr_start[0], i_buf};
+		detr_start <= i_buf;
 	end
 end
 
@@ -90,7 +90,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 		sipo <= {WIDTH_DATA{1'b1}};
 	else begin
 		if (en_sipo)
-			sipo <= {detr_start[0], sipo[WIDTH_DATA-1:1]};
+			sipo <= {i_buf, sipo[WIDTH_DATA-1:1]};
 	end
 end
 

@@ -1,7 +1,7 @@
 
 module clock_gen #(
 	parameter WIDTH = 9,
-	parameter SIZE = 434
+	parameter [WIDTH-1:0] SIZE = 434
 ) (
 	output o_clk,
 	input  i_srst,
@@ -19,7 +19,7 @@ always @(posedge i_clk, negedge i_nrst) begin
 		cnt <= {WIDTH{1'b0}};
 	else begin
 		if (i_srst)
-			cnt <= 4;
+			cnt <= SIZE >> 1;
 		else begin
 			if (SIZE - 1 == cnt)
 				cnt <= {WIDTH{1'b0}};
